@@ -13,6 +13,7 @@ import type {
 } from '@/types';
 import { uid } from '@/lib/format';
 import { SEED_EXERCISES } from '@/lib/seed';
+import { germanInitialState, isSeedEnabled, type GermanSeed } from '@/lib/seedGerman';
 
 interface State {
   hydrated: boolean;
@@ -60,16 +61,25 @@ interface State {
   reset: () => void;
 }
 
+const seed: GermanSeed = isSeedEnabled()
+  ? germanInitialState()
+  : {
+      profile: { goals: {} },
+      bodyMetrics: [],
+      nutrition: [],
+      workouts: [],
+    };
+
 export const useStore = create<State>()(
   persist(
     (set, get) => ({
       hydrated: false,
       exercises: SEED_EXERCISES,
-      workouts: [],
-      bodyMetrics: [],
-      nutrition: [],
+      workouts: seed.workouts,
+      bodyMetrics: seed.bodyMetrics,
+      nutrition: seed.nutrition,
       favorites: [],
-      profile: { goals: {} },
+      profile: seed.profile,
 
       setHydrated: () => set({ hydrated: true }),
 
