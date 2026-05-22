@@ -1,11 +1,11 @@
 node_modules/
-.expo/
-dist/
-web-build/
+.next/
+out/
 *.log
 .DS_Store
 .env
 .env.local
+.env*.local
+.vercel
 *.tsbuildinfo
-ios/
-android/
+next-env.d.ts

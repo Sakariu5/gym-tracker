@@ -9,49 +9,76 @@ export type MuscleGroup =
   | 'cardio'
   | 'otro';
 
+export type MealType = 'desayuno' | 'almuerzo' | 'cena' | 'snack';
+
 export interface Exercise {
-  id: number;
+  id: string;
   name: string;
   muscleGroup: MuscleGroup;
-  notes?: string;
-}
-
-export interface RoutineExercise {
-  id: number;
-  routineId: number;
-  exerciseId: number;
-  order: number;
-  targetSets: number;
-  targetReps: number;
-  targetWeight?: number;
-  exercise?: Exercise;
-}
-
-export interface Routine {
-  id: number;
-  name: string;
-  description?: string;
-  createdAt: string;
-  exercises?: RoutineExercise[];
+  equipment?: string;
 }
 
 export interface WorkoutSet {
-  id: number;
-  workoutId: number;
-  exerciseId: number;
-  setNumber: number;
-  reps: number;
+  id: string;
+  exerciseId: string;
   weight: number;
+  reps: number;
+  rir?: number;
   completed: boolean;
-  exercise?: Exercise;
+  createdAt: string;
 }
 
 export interface Workout {
-  id: number;
-  routineId?: number;
-  routineName?: string;
+  id: string;
+  name: string;
+  date: string;
   startedAt: string;
   endedAt?: string;
   notes?: string;
-  sets?: WorkoutSet[];
+  sets: WorkoutSet[];
+}
+
+export interface BodyMetric {
+  id: string;
+  date: string;
+  weight?: number;
+  bodyFat?: number;
+  muscleMass?: number;
+  waist?: number;
+  photoUrl?: string;
+  notes?: string;
+}
+
+export interface NutritionEntry {
+  id: string;
+  date: string;
+  foodName: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  mealType: MealType;
+  createdAt: string;
+}
+
+export interface Favorite {
+  id: string;
+  foodName: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+}
+
+export interface Goals {
+  weight?: number;
+  bodyFat?: number;
+  caloriesDaily?: number;
+  proteinDaily?: number;
+}
+
+export interface UserProfile {
+  name?: string;
+  height?: number;
+  goals: Goals;
 }

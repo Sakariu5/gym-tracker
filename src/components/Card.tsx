@@ -1,43 +1,22 @@
-import React, { type ReactNode } from 'react';
-import {
-  Pressable,
-  StyleSheet,
-  View,
-  type StyleProp,
-  type ViewStyle,
-} from 'react-native';
-import { colors, radius, spacing } from '@/theme/colors';
+import clsx from 'clsx';
+import type { HTMLAttributes, ReactNode } from 'react';
 
-interface Props {
+interface CardProps extends HTMLAttributes<HTMLDivElement> {
   children: ReactNode;
-  onPress?: () => void;
-  style?: StyleProp<ViewStyle>;
+  padded?: boolean;
 }
 
-export function Card({ children, onPress, style }: Props) {
-  if (onPress) {
-    return (
-      <Pressable
-        onPress={onPress}
-        style={({ pressed }) => [
-          styles.card,
-          { opacity: pressed ? 0.8 : 1 },
-          style,
-        ]}
-      >
-        {children}
-      </Pressable>
-    );
-  }
-  return <View style={[styles.card, style]}>{children}</View>;
+export function Card({ children, className, padded = true, ...rest }: CardProps) {
+  return (
+    <div
+      className={clsx(
+        'bg-surface border border-border rounded-2xl',
+        padded && 'p-5',
+        className,
+      )}
+      {...rest}
+    >
+      {children}
+    </div>
+  );
 }
-
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: colors.surface,
-    borderRadius: radius.lg,
-    padding: spacing.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-});
