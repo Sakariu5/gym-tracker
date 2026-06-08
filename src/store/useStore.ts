@@ -13,6 +13,7 @@ import type {
 } from '@/types';
 import { uid } from '@/lib/format';
 import { SEED_EXERCISES } from '@/lib/seed';
+import { normalizeName, type ParsedWorkout } from '@/lib/parseWorkout';
 
 interface State {
   hydrated: boolean;
@@ -45,6 +46,7 @@ interface State {
   repeatPrevious: (workoutId: string, exerciseId: string) => void;
 
   addExercise: (name: string, muscleGroup: Exercise['muscleGroup']) => string;
+  importWorkout: (parsed: ParsedWorkout) => string;
 
   addBodyMetric: (m: Omit<BodyMetric, 'id'>) => void;
   deleteBodyMetric: (id: string) => void;
@@ -177,6 +179,63 @@ export const useStore = create<State>()(
           exercises: [...s.exercises, { id, name, muscleGroup }],
         }));
         return id;
+      },
+
+      importWorkout: (parsed) => {
+        const workoutId = uid();
+        const now = new Date().toISOString();
+        const newExercises: Exercise[] = [];
+        const sets: WorkoutSet[] = [];
+
+        // Empareja con ejercicios existentes por nombre normalizado; si no, los crea.
+        const resolveExercise = (
+          name: string,
+          muscleGroup: Exercise['muscleGroup'],
+        ): string => {
+          const target = normalizeName(name);
+          const existing = [...get().exercises, ...newExercises].find(
+            (e) => normalizeName(e.name) === target,
+          );
+          if (existing) return existing.id;
+          const created: Exercise = { id: uid(), name: name.trim(), muscleGroup };
+          newExercises.push(created);
+          return created.id;
+        };
+
+        for (const ex of parsed.exercises) {
+          const exerciseId = resolveExercise(ex.name, ex.muscleGroup);
+          for (const s of ex.sets) {
+            sets.push({
+              id: uid(),
+              exerciseId,
+              weight: s.weight,
+              reps: s.reps,
+              unit: s.unit,
+              perSide: s.perSide || undefined,
+              dropGroup: s.dropGroup,
+              completed: true,
+              createdAt: parsed.date,
+            });
+          }
+        }
+
+        const workout: Workout = {
+          id: workoutId,
+          name: parsed.name,
+          date: parsed.date,
+          startedAt: parsed.date,
+          endedAt: parsed.date,
+          notes: parsed.notes,
+          sets,
+        };
+
+        set((s) => ({
+          exercises: [...s.exercises, ...newExercises],
+          workouts: [...s.workouts, workout].sort((a, b) =>
+            a.date.localeCompare(b.date),
+          ),
+        }));
+        return workoutId;
       },
 
       addBodyMetric: (m) =>

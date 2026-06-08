@@ -110,6 +110,17 @@ function WorkoutActive() {
         );
       })}
 
+      {workout.notes && (
+        <Card>
+          <div className="text-xs text-muted uppercase tracking-wide mb-2">
+            Resumen
+          </div>
+          <pre className="text-sm whitespace-pre-wrap font-sans text-zinc-300">
+            {workout.notes}
+          </pre>
+        </Card>
+      )}
+
       {!finished && (
         <>
           <Button variant="secondary" onClick={() => setPicking(true)}>
@@ -229,29 +240,33 @@ function ExerciseBlock({
         </div>
       )}
 
-      <div className="mt-3 space-y-1.5">
-        <div className="grid grid-cols-[2rem_1fr_1fr_3rem] gap-2 text-xs text-muted uppercase px-1">
-          <div>#</div>
-          <div className="text-center">Peso</div>
-          <div className="text-center">Reps</div>
-          <div className="text-center">✓</div>
-        </div>
-        {sets.length === 0 && (
-          <div className="text-sm text-muted text-center py-2">
-            Sin sets todavía
+      {readonly ? (
+        <ReadonlySets sets={sets} />
+      ) : (
+        <div className="mt-3 space-y-1.5">
+          <div className="grid grid-cols-[2rem_1fr_1fr_3rem] gap-2 text-xs text-muted uppercase px-1">
+            <div>#</div>
+            <div className="text-center">Peso</div>
+            <div className="text-center">Reps</div>
+            <div className="text-center">✓</div>
           </div>
-        )}
-        {sets.map((s, i) => (
-          <SetRow
-            key={s.id}
-            index={i + 1}
-            set={s}
-            readonly={readonly}
-            onChange={(patch) => updateSet(workout.id, s.id, patch)}
-            onRemove={() => removeSet(workout.id, s.id)}
-          />
-        ))}
-      </div>
+          {sets.length === 0 && (
+            <div className="text-sm text-muted text-center py-2">
+              Sin sets todavía
+            </div>
+          )}
+          {sets.map((s, i) => (
+            <SetRow
+              key={s.id}
+              index={i + 1}
+              set={s}
+              readonly={readonly}
+              onChange={(patch) => updateSet(workout.id, s.id, patch)}
+              onRemove={() => removeSet(workout.id, s.id)}
+            />
+          ))}
+        </div>
+      )}
 
       {!readonly && (
         <button
@@ -262,6 +277,71 @@ function ExerciseBlock({
         </button>
       )}
     </Card>
+  );
+}
+
+function setLabel(s: WorkoutSet): string {
+  const unit = s.unit ?? 'kg';
+  return `${s.weight} ${unit}${s.perSide ? '/lado' : ''} × ${s.reps}`;
+}
+
+function ReadonlySets({ sets }: { sets: WorkoutSet[] }) {
+  if (sets.length === 0) {
+    return (
+      <div className="mt-3 text-sm text-muted text-center py-2">Sin sets</div>
+    );
+  }
+
+  type Row =
+    | { kind: 'set'; set: WorkoutSet; n: number }
+    | { kind: 'drop'; sets: WorkoutSet[] };
+  const rows: Row[] = [];
+  let n = 0;
+  let i = 0;
+  while (i < sets.length) {
+    const s = sets[i];
+    if (s.dropGroup === undefined) {
+      n++;
+      rows.push({ kind: 'set', set: s, n });
+      i++;
+    } else {
+      const group = s.dropGroup;
+      const dropSets: WorkoutSet[] = [];
+      while (i < sets.length && sets[i].dropGroup === group) {
+        dropSets.push(sets[i]);
+        i++;
+      }
+      rows.push({ kind: 'drop', sets: dropSets });
+    }
+  }
+
+  return (
+    <div className="mt-3 space-y-1.5 text-sm">
+      {rows.map((row, idx) =>
+        row.kind === 'set' ? (
+          <div key={idx} className="flex items-center gap-3">
+            <span className="text-muted w-5 text-xs">{row.n}</span>
+            <span>{setLabel(row.set)}</span>
+          </div>
+        ) : (
+          <div
+            key={idx}
+            className="rounded-lg border border-accent/30 bg-accent/5 px-3 py-2"
+          >
+            <div className="text-[11px] uppercase tracking-wide text-accent mb-1">
+              Dropset
+            </div>
+            <div className="flex flex-wrap gap-x-3 gap-y-1">
+              {row.sets.map((s) => (
+                <span key={s.id} className="text-zinc-300">
+                  {setLabel(s)}
+                </span>
+              ))}
+            </div>
+          </div>
+        ),
+      )}
+    </div>
   );
 }
 

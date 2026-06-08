@@ -68,6 +68,9 @@ function WorkoutList() {
               onChange={(e) => setName(e.target.value)}
             />
             <Button onClick={() => onStart()}>Empezar</Button>
+            <Link href="/workout/paste" className="block">
+              <Button variant="secondary">📋 Pegar entreno desde texto</Button>
+            </Link>
           </div>
           {previousNames.length > 0 && (
             <div className="mt-4">

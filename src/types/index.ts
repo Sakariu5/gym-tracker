@@ -11,6 +11,8 @@ export type MuscleGroup =
 
 export type MealType = 'desayuno' | 'almuerzo' | 'cena' | 'snack';
 
+export type WeightUnit = 'kg' | 'lb';
+
 export interface Exercise {
   id: string;
   name: string;
@@ -24,6 +26,12 @@ export interface WorkoutSet {
   weight: number;
   reps: number;
   rir?: number;
+  /** Unidad del peso. Por defecto 'kg' cuando no se especifica. */
+  unit?: WeightUnit;
+  /** El peso es por lado (ej. Smith, prensa). */
+  perSide?: boolean;
+  /** Sets con el mismo número forman un dropset. */
+  dropGroup?: number;
   completed: boolean;
   createdAt: string;
 }
